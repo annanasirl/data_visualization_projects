@@ -204,7 +204,7 @@ with col1:
     fig = px.histogram(
         budget_and_revenue,
         x="budget",
-        nbins=500,
+        nbins=100,
         labels={"budget": "Budget ($)"}
     )
     fig.update_layout(
