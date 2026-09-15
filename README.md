@@ -45,3 +45,7 @@ The analysis distinguishes between revenue exceeding production budget and actua
 - SQL
 - Plotly
 - Streamlit
+
+## Future Work
+
+A possible extension of the project is to make greater use of the `genres` field, which is currently not included in the analysis. Future work could investigate whether certain movie genres are associated with higher revenues, budgets, ratings, or other measures of success.
