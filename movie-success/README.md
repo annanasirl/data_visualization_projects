@@ -4,6 +4,8 @@ An exploratory data analysis project investigating which factors are associated 
 
 The project uses Python, pandas, SQL, Plotly, and Streamlit to clean, analyse, and visualize data from more than 45,000 movies.
 
+Click [here](https://moviesuccessdataviz-annanasirl.streamlit.app/) to watch!
+
 ## Dataset
 
 The project is based on [The Movies Dataset](https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset) by Rounak Banik.
