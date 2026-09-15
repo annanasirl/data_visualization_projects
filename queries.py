@@ -1,17 +1,8 @@
-import os
+import sqlite3
 
 import pandas as pd
-from dotenv import load_dotenv
-from sqlalchemy import create_engine
 
-# Load database credentials from the .env file
-load_dotenv()
-
-# Create a connection to the PostgreSQL database
-engine = create_engine(
-    f"postgresql+psycopg2://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
-    f"@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
-)
+engine = sqlite3.connect("data/db/movies.db")
 
 # Get the 10 highest-grossing movies
 top10_high_grossing_query = """
@@ -73,7 +64,7 @@ average_revenue_query = """
 SELECT 
     avg(revenue) as revenue
 FROM movies
-WHERE revenue IS NOT NULL
+WHERE revenue IS NOT NULL and budget IS NOT NULL
 """
 
 # Calculate the average budget
@@ -81,7 +72,7 @@ average_budget_query = """
 SELECT 
     avg(budget) as budget
 FROM movies
-WHERE budget IS NOT NULL
+WHERE budget IS NOT NULL and revenue IS NOT NULL
 """
 
 # Get movies with both budget and revenue
@@ -109,28 +100,11 @@ ORDER BY revenue DESC
 # Calculate the revenue-to-budget ratio
 revenue_budget_ratio_query = """
 SELECT 
-    title, 
-    budget,
-    revenue, 
+    *, 
     revenue / budget as revenue_budget_ratio
 FROM movies
-WHERE budget IS NOT NULL and revenue IS NOT NULL AND budget > 0
+WHERE budget IS NOT NULL and revenue IS NOT NULL AND budget >= 10000
 ORDER BY revenue_budget_ratio DESC
-"""
-
-# get revenue generated on average per year
-revenue_per_year_query = """
-SELECT
-    title,
-    revenue,
-    revenue / NULLIF(
-        EXTRACT(YEAR FROM AGE(CURRENT_DATE, release_date)),
-        0
-    ) AS revenue_per_year
-FROM movies
-WHERE release_date IS NOT NULL
-  AND revenue IS NOT NULL
-ORDER BY revenue_per_year DESC;
 """
 
 # Get runtime and rating for movies
@@ -138,9 +112,9 @@ runtime_and_rating_query = """
 SELECT 
     title, 
     runtime, 
-    vote_average
+    vote_average * log(1 + vote_count) as rating
 FROM movies
-WHERE runtime IS NOT NULL and vote_average IS NOT NULL
+WHERE runtime IS NOT NULL and vote_average IS NOT NULL and vote_count IS NOT NULL
 """
 
 # Get runtime and revenue for movies
@@ -151,6 +125,17 @@ SELECT
     revenue
 FROM movies
 WHERE runtime IS NOT NULL and revenue IS NOT NULL
+"""
+
+# Get rating and revenue for movies
+rel_rating_and_revenue_query = """
+SELECT 
+    title, 
+    vote_average * log(1 + vote_count) as rating, 
+    revenue
+FROM movies
+WHERE vote_average IS NOT NULL and revenue IS NOT NULL and vote_count IS NOT NULL
+ORDER BY revenue DESC
 """
 
 count_movies_query = """
@@ -200,10 +185,6 @@ revenue_budget_ratio = pd.read_sql(revenue_budget_ratio_query, engine)
 #print("\n--- Revenue-to-budget ratio ---")
 #print(revenue_budget_ratio)
 
-revenue_per_year = pd.read_sql(revenue_per_year_query, engine)
-#print("\n--- Revenue per year ---")
-#print(revenue_per_year)
-
 runtime_and_rating = pd.read_sql(runtime_and_rating_query,engine)
 #print("\n--- Runtime and rating ---")
 #print(runtime_and_rating)
@@ -211,6 +192,8 @@ runtime_and_rating = pd.read_sql(runtime_and_rating_query,engine)
 runtime_and_revenue = pd.read_sql(runtime_and_revenue_query,engine)
 #print("\n--- Runtime and revenue ---")
 #print(runtime_and_revenue)
+
+rel_rating_and_revenue = pd.read_sql(rel_rating_and_revenue_query, engine)
 
 count_movies = pd.read_sql(count_movies_query,engine)
 #print("\n--- Number of movies ---")
