@@ -1,8 +1,9 @@
+from pathlib import Path
 import sqlite3
-
 import pandas as pd
 
-engine = sqlite3.connect("data/db/movies.db")
+BASE_DIR = Path(__file__).resolve().parent
+engine = sqlite3.connect(BASE_DIR / "data" / "db" / "movies.db")
 
 # Get the 10 highest-grossing movies
 top10_high_grossing_query = """
